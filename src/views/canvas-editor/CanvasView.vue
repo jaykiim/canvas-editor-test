@@ -31,7 +31,6 @@ function handleMouseUp() {
 }
 
 function handleWheel(e: WheelEvent) {
-  console.log('WheelEvent', e);
   const delta = e.deltaY;
   if (delta > 0) zoomOut();
   else zoomIn();
@@ -47,8 +46,18 @@ function zoomOut() {
 </script>
 
 <template>
-  <div ref="canvas" class="container" @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @wheel="handleWheel">
-    <div class="test-box" :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})` }"></div>
+  <div 
+    ref="canvas" 
+    class="container" 
+    @mousedown="handleMouseDown" 
+    @mousemove="handleMouseMove" 
+    @mouseup="handleMouseUp" 
+    @wheel="handleWheel"
+  >
+    <div 
+      class="test-box" 
+      :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})` }"
+    />
   </div>
 </template>
 
