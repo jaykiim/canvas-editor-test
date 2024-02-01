@@ -15,6 +15,8 @@ export const useElementStore = defineStore('elementStore', () => {
     }
   ]);
 
+  const selectedElement = ref<Element | null>(null);
+
   function addElement(element: Element) {
     elements.value.push(element);
   }
@@ -23,7 +25,16 @@ export const useElementStore = defineStore('elementStore', () => {
     return elements.value;
   }
 
+  function getSelectedElement() {
+    return selectedElement.value;
+  }
+
+  function setSelectedElement(element: Element | null) {
+    selectedElement.value = element;
+  }
+
+
   // 다른 필요한 메서드 추가 가능
 
-  return { elements, addElement, getElements };
+  return { elements, addElement, getElements, getSelectedElement, setSelectedElement };
 });

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import DesignElement from './components/DesignElement.vue'
+import { useElementStore } from '@/stores/elements';
 
 const canvas = ref<HTMLDivElement>();
 const isDragging = ref<boolean>(false);
@@ -8,6 +10,8 @@ const startDragY = ref<number>(0);
 const panX = ref<number>(0);
 const panY = ref<number>(0);
 const zoomLevel = ref<number>(1);
+
+const elementStore = useElementStore();
 
 function handleMouseDown(e: MouseEvent) {
   isDragging.value = true;
@@ -43,25 +47,40 @@ function zoomIn() {
 function zoomOut() {
   zoomLevel.value -= 0.1;
 }
+
+function handleCanvasClick() {
+  console.log('canvas click', elementStore.getSelectedElement());
+  
+  // 빈 공간 클릭 시 선택된 엘리먼트 해제
+  if (!elementStore.getSelectedElement()) {
+    console.log('canvas click > no selected element');
+    elementStore.setSelectedElement(null);
+  }
+}
 </script>
 
 <template>
   <div 
     ref="canvas" 
-    class="container" 
+    class="canvas" 
     @mousedown="handleMouseDown" 
     @mousemove="handleMouseMove" 
     @mouseup="handleMouseUp" 
     @wheel="handleWheel"
+    @click="handleCanvasClick"
   >
-    <div 
-      class="test-box" 
-      :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})` }"
-    />
+    <DesignElement :zoomLevel="zoomLevel" :panX="panX" :panY="panY" />
   </div>
 </template>
 
 <style scoped lang="scss">
+.canvas {
+  position: relative;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  width: 100%;
+  height: calc(100% - 3rem);
+}
 .container {
   position: relative;
   overflow: hidden;
