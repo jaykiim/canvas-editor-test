@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
 import BoundingBox from './BoundingBox.vue';
 import type { Element } from '@/types/Element';
@@ -10,20 +9,17 @@ defineProps({
   panY: { type: Number, required: true }
 })
 
-const elementStore = useElementStore();
-const elements = elementStore.getElements();
-const selectedElement = elementStore.getSelectedElement();
+const { state, setSelectedElement } = useElementStore();
 
-const handleElementClick = (e: MouseEvent, element: Element) => {
-  console.log('element mousedown');
-  elementStore.setSelectedElement(element);
+const handleElementClick = (element: Element) => {
+  setSelectedElement(element);
 };
 
 </script>
 
 <template>
   <div 
-    v-for="item in elements"
+    v-for="item in state.elements"
     :key="item.id"
     class="element"
     :style="{
@@ -36,11 +32,11 @@ const handleElementClick = (e: MouseEvent, element: Element) => {
       transform: `scale(${zoomLevel})`,
       position: 'absolute',
     }"
-    @mousedown.stop="handleElementClick($event, item)"
+    @mousedown.stop="handleElementClick(item)"
   >
     <BoundingBox 
-      v-if="selectedElement && selectedElement.id === item.id" 
-      :element="item" 
+      v-if="state.selectedElement && state.selectedElement.id === item.id" 
+      :element="state.selectedElement" 
     />
   </div>      
 </template>
