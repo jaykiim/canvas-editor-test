@@ -11,7 +11,7 @@ const panX = ref<number>(0);
 const panY = ref<number>(0);
 const zoomLevel = ref<number>(1);
 
-const elementStore = useElementStore();
+const { setSelectedElement } = useElementStore();
 
 function handleMouseDown(e: MouseEvent) {
   isDragging.value = true;
@@ -48,13 +48,14 @@ function zoomOut() {
   zoomLevel.value -= 0.1;
 }
 
-function handleCanvasClick() {
-  console.log('canvas click', elementStore.getSelectedElement());
-  
-  // 빈 공간 클릭 시 선택된 엘리먼트 해제
-  if (!elementStore.getSelectedElement()) {
-    console.log('canvas click > no selected element');
-    elementStore.setSelectedElement(null);
+function handleCanvasClick(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+  if (target) {
+    const clickedElement = target.closest('.element');
+    // 클릭한 요소의 조상 중에 .element가 없는 경우 = 빈 공간을 클릭한 경우
+    if (!clickedElement) { 
+      setSelectedElement(null);
+    }
   }
 }
 </script>
