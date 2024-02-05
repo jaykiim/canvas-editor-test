@@ -1,40 +1,59 @@
-import { ref } from 'vue';
+import { reactive } from 'vue';
 import { defineStore } from 'pinia';
 import type { Element } from '@/types/Element';
 
-export const useElementStore = defineStore('elementStore', () => {
-  const elements = ref<Element[]>([
-    {
-      id: '1',
-      name: 'test',
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      backgroundColor: '#333'
-    }
-  ]);
+interface ElementState {
+  elements: Element[],
+  selectedElement: Element
+}
 
-  const selectedElement = ref<Element | null>(null);
+export const useElementStore = defineStore('elementStore', () => {
+  const state = reactive<ElementState>({
+    elements: [
+      {
+        id: '1',
+        name: 'test',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+        backgroundColor: '#333'
+      }
+    ],
+    selectedElement: null
+  })
+  // const elements = reactive<Element[]>([
+  //   {
+  //     id: '1',
+  //     name: 'test',
+  //     x: 0,
+  //     y: 0,
+  //     width: 100,
+  //     height: 100,
+  //     backgroundColor: '#333'
+  //   }
+  // ]);
+
+  // const selectedElement = reactive<Element | null>(null);
 
   function addElement(element: Element) {
-    elements.value.push(element);
+    state.elements.push(element);
   }
 
   function getElements() {
-    return elements.value;
+    return state.elements;
   }
 
   function getSelectedElement() {
-    return selectedElement.value;
+    return state.selectedElement;
   }
 
   function setSelectedElement(element: Element | null) {
-    selectedElement.value = element;
+    state.selectedElement = element;
   }
 
 
   // 다른 필요한 메서드 추가 가능
 
-  return { elements, addElement, getElements, getSelectedElement, setSelectedElement };
+  return { state, addElement, getElements, getSelectedElement, setSelectedElement };
 });
