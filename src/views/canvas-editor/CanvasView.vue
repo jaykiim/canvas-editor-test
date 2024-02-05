@@ -82,17 +82,4 @@ function handleCanvasClick(e: MouseEvent) {
   width: 100%;
   height: calc(100% - 3rem);
 }
-.container {
-  position: relative;
-  overflow: hidden;
-  background-color: #f5f5f5;
-  width: 100%;
-  height: calc(100% - 3rem);
-}
-
-.test-box {
-  width: 100px;
-  height: 100px;
-  background-color: black;
-}
 </style>
