@@ -17,28 +17,31 @@ const startY = ref(0);
 
 let elementSnapshot:Element;
 
-function handleMouseDown(e: MouseEvent, direction: 'lt' | 'rt' | 'lb' | 'rb') {
-  isResizing.value = true;
+function handleMouseDown(e: MouseEvent, direction?: 'lt' | 'rt' | 'lb' | 'rb') {
+  if (direction) {
+    isResizing.value = true;
+    resizeHandleRef.value = direction;
+  }
+  
   startX.value = e.clientX;
   startY.value = e.clientY;
   elementSnapshot = JSON.parse(JSON.stringify(state.selectedElement));
-  resizeHandleRef.value = direction;
   window.addEventListener('mousemove', handleMouseMove);
   window.addEventListener('mouseup', handleMouseUp);
 };
 
 function handleMouseMove(e: MouseEvent) {
-  if (isResizing.value) {
-    const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
-    const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
+  const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
+  const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
+  // 크기 조정
+  if (isResizing.value) {  
     let l = elementSnapshot.x;
     let t = elementSnapshot.y;
     let r = l + elementSnapshot.width;
     let b = t + elementSnapshot.height;
-    
-    const direction = resizeHandleRef.value;
 
+    const direction = resizeHandleRef.value;
     if (direction) {
       if (direction === 'lt') {
         l += dx;
@@ -74,6 +77,12 @@ function handleMouseMove(e: MouseEvent) {
       }
     }
   }
+
+  // 이동
+  else {
+    state.selectedElement.x = elementSnapshot.x + dx;
+    state.selectedElement.y = elementSnapshot.y + dy;
+  }
 };
 
 function handleMouseUp() {
@@ -95,7 +104,7 @@ onBeforeUnmount(() => {
   <div 
     ref="boundingBox" 
     class="bounding-box"
-    @mousemove="handleMouseMove" 
+    @mousedown="handleMouseDown" 
   >
     <div 
       ref="resizeHandleTopLeft" 
