@@ -37,6 +37,7 @@ const handleElementClick = (element: Element) => {
     <BoundingBox 
       v-if="state.selectedElement && state.selectedElement.id === item.id" 
       :element="state.selectedElement" 
+      :zoom-level="zoomLevel"
     />
   </div>      
 </template>
