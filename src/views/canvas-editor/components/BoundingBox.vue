@@ -1,45 +1,123 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { onBeforeUnmount, ref, type PropType } from 'vue';
+import { useElementStore } from '@/stores/elements';
+import type { Element } from '@/types/Element';
 
-const props = defineProps(['element']); // element prop 추가
+const props = defineProps({
+  element: { type: Object as PropType<Element>, required: true },
+  zoomLevel: { type: Number, required: true }
+}); // element prop 추가
 
-const boundingBoxRef = ref(null);
-const isDragging = ref(false);
+const { state } = useElementStore();
+
+const isResizing = ref(false);
+const resizeHandleRef = ref<'lt' | 'rt' | 'lb' | 'rb' | null>(null);
 const startX = ref(0);
 const startY = ref(0);
 
-const handleMouseDown = (e: MouseEvent) => {
-  isDragging.value = true;
+let elementSnapshot:Element;
+
+function handleMouseDown(e: MouseEvent, direction: 'lt' | 'rt' | 'lb' | 'rb') {
+  isResizing.value = true;
   startX.value = e.clientX;
   startY.value = e.clientY;
+  elementSnapshot = JSON.parse(JSON.stringify(state.selectedElement));
+  resizeHandleRef.value = direction;
+  window.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('mouseup', handleMouseUp);
 };
 
-const handleMouseMove = (e: MouseEvent) => {
-  if (isDragging.value) {
-    const deltaX = e.clientX - startX.value;
-    const deltaY = e.clientY - startY.value;
+function handleMouseMove(e: MouseEvent) {
+  if (isResizing.value) {
+    const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
+    const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
-    // 여기서 엘리먼트를 이동시키는 로직을 추가합니다.
-    // element 속성을 통해 현재 BoundingBox가 속한 엘리먼트 정보에 접근할 수 있습니다.
-    // 이동 시에는 store 등을 사용하여 엘리먼트의 좌표를 업데이트하거나, 업데이트된 좌표를 다시 BoundingBox에 전달합니다.
+    let l = elementSnapshot.x;
+    let t = elementSnapshot.y;
+    let r = l + elementSnapshot.width;
+    let b = t + elementSnapshot.height;
+    
+    const direction = resizeHandleRef.value;
 
-    startX.value = e.clientX;
-    startY.value = e.clientY;
+    if (direction) {
+      if (direction === 'lt') {
+        l += dx;
+        t += dy;
+      }
+      if (direction === 'rt') {
+        r += dx;
+        t += dy;
+      }
+      if (direction === 'lb') {
+        l += dx;
+        b += dy;
+      }
+      if (direction === 'rb') {
+        r += dx;
+        b += dy;
+      }
+      state.selectedElement.x = l;
+      state.selectedElement.y = t;
+      state.selectedElement.width = r - l;
+      state.selectedElement.height = b - t;
+
+      // 너비를 끝까지 줄일 경우 방향 변경
+      if (state.selectedElement.width < 0) {
+        state.selectedElement.x += state.selectedElement.width; // x좌표값이 기존 r값 (l + width)이 됨
+        state.selectedElement.width *= -1; // 너비를 양수로 변환 
+      }
+
+      // 높이를 끝까지 줄일 경우 방향 변경
+      if (state.selectedElement.height < 0) {
+        state.selectedElement.y += state.selectedElement.height; // y좌표값이 기존 b값 (t + height)이 됨
+        state.selectedElement.height *= -1; // 높이를 양수로 변환
+      }
+    }
   }
 };
 
-const handleMouseUp = () => {
-  isDragging.value = false;
-};
+function handleMouseUp() {
+  isResizing.value = false;
+  resizeHandleRef.value = null;
+
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+}
+
+onBeforeUnmount(() => {
+  // 컴포넌트가 소멸되기 전에 이벤트 리스너 제거
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+});
 </script>
 
 <template>
   <div 
-    class="bounding-box" 
-    @mousedown="handleMouseDown"
-    @mousemove="handleMouseMove"
-    @mouseup="handleMouseUp"
-  ></div>
+    ref="boundingBox" 
+    class="bounding-box"
+    @mousemove="handleMouseMove" 
+  >
+    <div 
+      ref="resizeHandleTopLeft" 
+      class="resize-handle top-left"
+      @mousedown="handleMouseDown($event, 'lt')"
+    />
+    <div 
+      ref="resizeHandleTopRight" 
+      class="resize-handle top-right"
+      @mousedown="handleMouseDown($event, 'rt')"
+    />
+    <div 
+      ref="resizeHandleBottomLeft" 
+      class="resize-handle bottom-left"
+      @mousedown="handleMouseDown($event, 'lb')"
+    />
+    <div 
+      ref="resizeHandleBottomRight" 
+      class="resize-handle bottom-right"
+      @mousedown="handleMouseDown($event, 'rb')"
+    />
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -48,8 +126,43 @@ const handleMouseUp = () => {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border: 2px dashed #3498db;
+  border: 2px solid #4597f7;
   pointer-events: auto; /* 이벤트를 받도록 설정 */
   cursor: move;
+
+  .resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1px solid #4597f7;
+    background-color: #fff;
+    cursor: nwse-resize; /* 대각선 리사이즈 커서 */
+
+    &.top-left {
+      top: 0;
+      left: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    &.top-right {
+      top: 0;
+      right: 0;
+      transform: translate(50%, -50%);
+      cursor: nesw-resize; /* 대각선 리사이즈 커서 반대 방향 */
+    }
+
+    &.bottom-left {
+      bottom: 0;
+      left: 0;
+      transform: translate(-50%, 50%);
+      cursor: nesw-resize; /* 대각선 리사이즈 커서 반대 방향 */
+    }
+
+    &.bottom-right {
+      bottom: 0;
+      right: 0;
+      transform: translate(50%, 50%);
+    }
+  }
 }
 </style>
