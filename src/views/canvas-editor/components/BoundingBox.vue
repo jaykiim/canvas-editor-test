@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, type PropType } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
 import type { Element } from '@/types/Element';
 
 const props = defineProps({
-  element: { type: Object as PropType<Element>, required: true },
   zoomLevel: { type: Number, required: true }
-}); // element prop 추가
+});
 
 const { state } = useElementStore();
 
@@ -31,6 +30,7 @@ function handleMouseDown(e: MouseEvent, direction?: 'lt' | 'rt' | 'lb' | 'rb') {
 };
 
 function handleMouseMove(e: MouseEvent) {
+  console.log('zoom level', props.zoomLevel);
   const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
@@ -44,18 +44,22 @@ function handleMouseMove(e: MouseEvent) {
     const direction = resizeHandleRef.value;
     if (direction) {
       if (direction === 'lt') {
+        console.log('lt')
         l += dx;
         t += dy;
       }
       if (direction === 'rt') {
+        console.log('rt')
         r += dx;
         t += dy;
       }
       if (direction === 'lb') {
+        console.log('lb')
         l += dx;
         b += dy;
       }
       if (direction === 'rb') {
+        console.log('rb')
         r += dx;
         b += dy;
       }
@@ -104,27 +108,27 @@ onBeforeUnmount(() => {
   <div 
     ref="boundingBox" 
     class="bounding-box"
-    @mousedown="handleMouseDown" 
+    @mousedown.stop="handleMouseDown" 
   >
     <div 
       ref="resizeHandleTopLeft" 
       class="resize-handle top-left"
-      @mousedown="handleMouseDown($event, 'lt')"
+      @mousedown.stop="handleMouseDown($event, 'lt')"
     />
     <div 
       ref="resizeHandleTopRight" 
       class="resize-handle top-right"
-      @mousedown="handleMouseDown($event, 'rt')"
+      @mousedown.stop="handleMouseDown($event, 'rt')"
     />
     <div 
       ref="resizeHandleBottomLeft" 
       class="resize-handle bottom-left"
-      @mousedown="handleMouseDown($event, 'lb')"
+      @mousedown.stop="handleMouseDown($event, 'lb')"
     />
     <div 
       ref="resizeHandleBottomRight" 
       class="resize-handle bottom-right"
-      @mousedown="handleMouseDown($event, 'rb')"
+      @mousedown.stop="handleMouseDown($event, 'rb')"
     />
   </div>
 </template>
