@@ -23,20 +23,19 @@ const handleElementClick = (element: Element) => {
     :key="item.id"
     class="element"
     :style="{
-      left: `${item.x * zoomLevel + panX}px`,
-      top: `${item.y * zoomLevel + panY}px`,
+      left: `${(item.x + panX) * zoomLevel}px`,
+      top: `${(item.y + panY) * zoomLevel}px`,
       width: `${item.width * zoomLevel}px`,
       height: `${item.height * zoomLevel}px`,
       backgroundColor: item.backgroundColor,
       color: item.textColor,
-      transform: `scale(${zoomLevel})`,
+      // transform: `scale(${zoomLevel})`,
       position: 'absolute',
     }"
     @mousedown.stop="handleElementClick(item)"
   >
     <BoundingBox 
       v-if="state.selectedElement && state.selectedElement.id === item.id" 
-      :element="state.selectedElement" 
       :zoom-level="zoomLevel"
     />
   </div>      
