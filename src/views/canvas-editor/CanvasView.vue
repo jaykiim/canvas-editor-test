@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
-import DesignElement from './components/DesignElement.vue'
+// import DesignElement from './components/DesignElement.vue'
+import ElementView from './components/ElementView.vue';
+
+const ZOOM_FACTOR = 0.05;
 
 const canvas = ref<HTMLDivElement>();
+const container = ref<HTMLDivElement>();
+
 const isDragging = ref<boolean>(false);
 const startDragX = ref<number>(0);
 const startDragY = ref<number>(0);
 const panX = ref<number>(0);
 const panY = ref<number>(0);
-const zoomLevel = ref<number>(1);
+const conWidth = ref<number>(800);
+const conHeight = ref<number>(600);
+const scale = ref<number>(1); // 줌 배율
 
-const { setSelectedElement } = useElementStore();
+const { state, setSelectedElement } = useElementStore();
 
 function handleMouseDown(e: MouseEvent) {
   isDragging.value = true;
@@ -38,19 +45,6 @@ function handleMouseUp() {
   window.removeEventListener('mouseup', handleMouseUp);
 }
 
-function handleWheel(e: WheelEvent) {
-  const delta = e.deltaY
-  if (delta > 0) zoomOut();
-  else zoomIn();
-}
-
-function zoomIn() {
-  zoomLevel.value += 0.1;
-}
-
-function zoomOut() {
-  zoomLevel.value -= 0.1;
-}
 
 // function handleWheel(e: WheelEvent) {
 //   const delta = e.deltaY;
@@ -58,38 +52,100 @@ function zoomOut() {
 //   const mouseX = e.clientX - (rect?.left || 0);
 //   const mouseY = e.clientY - (rect?.top || 0);
 
-//   if (delta > 0) zoomOut(mouseX, mouseY, delta);
-//   else zoomIn(mouseX, mouseY, delta);
+//   if (delta > 0) zoomOut(mouseX, mouseY);
+//   else zoomIn(mouseX, mouseY);
 // }
 
-// function zoomIn(mouseX: number, mouseY: number, wheel: number) {
-//   // 배율 = 1 - (e.deltaX * zoomFactor)
-//   // 배율 증가량 = s - zoomLevel.value
-//   // 너비 증가량 = screenX * 배율 증가량
-//   // 이동량 =   
-//   // 이동비율 = dx / screenX
-//   // panX *= (1 - 이동비율) 
-
-//   const scaleFactor = 0.01;
-//   const s = 1 - (wheel * scaleFactor);
-//   const ds = s - zoomLevel.value;
-
-//   // const newZoomLevel = s;
-
-//   panX.value -= mouseX * ds;
-//   panY.value -= mouseY * ds;
-//   zoomLevel.value = s;
+// function zoomIn(mouseX: number, mouseY: number) {
+//   const scaleFactor = 0.1;
+//   const newZoomLevel = scale.value + scaleFactor;
+//   panX.value -= mouseX * scaleFactor;
+//   panY.value -= mouseY * scaleFactor;
+//   scale.value = newZoomLevel;
 // }
 
-// function zoomOut(mouseX: number, mouseY: number, wheel: number) {
-//   const scaleFactor = 0.01;
-//   const s = 1 - (wheel * scaleFactor);
-//   const ds = s - zoomLevel.value;
-//   /// const newZoomLevel = zoomLevel.value - scaleFactor;
-//   panX.value += mouseX * ds;
-//   panY.value += mouseY * ds;
-//   zoomLevel.value = s;
+// function zoomOut(mouseX: number, mouseY: number) {
+//   const scaleFactor = 0.1;
+//   const newZoomLevel = scale.value - scaleFactor;
+//   panX.value += mouseX * scaleFactor;
+//   panY.value += mouseY * scaleFactor;
+//   scale.value = newZoomLevel;
 // }
+
+// function handleWheel(e: WheelEvent) {
+//   if (!container.value) return; 
+
+//   // .element-container ~ 마우스 포인터까지 거리
+//   const containerPos = container.value.getBoundingClientRect();
+//   const x = (e.clientX - containerPos.left - panX.value) * scale.value;  
+//   const y = (e.clientY - containerPos.top - panX.value) * scale.value;
+//   console.log('마우스 위치', e.clientX, e.clientY);
+//   console.log('컨테이너 위치', containerPos.left, containerPos.top);
+//   console.log('컨테이너 좌표', panX.value, panY.value);
+//   console.log('컨테이너 ~ 마우스 거리', x, y);
+
+//   // 화면 배율
+//   const zoomLevel = e.deltaY * ZOOM_FACTOR;
+//   let s = (1 - zoomLevel);
+//   if (s < 0.125) s = 0.125;
+//   // console.log('화면 배율', s);
+
+//   // 컨테이너 너비가 1일 때 컨테이너 ~ 마우스 거리값
+//   const px = x / 1920; 
+//   const py = y / 1080;
+//   // console.log('마우스 거리비', px, py);
+
+//   // 증가량 
+//   const ds = s - scale.value;
+//   const dw = 1920 * ds;
+//   const dh = 1080 * ds;
+//   // console.log('증가량: 배율, 너비, 높이', ds, dw, dh);
+//   console.log('==========================')
+
+//   panX.value -= px * dw;
+//   panY.value -= py * dh;
+//   scale.value = s;
+// }
+
+function handleWheel(e: WheelEvent) {
+  // container lt를 기준으로 마우스 포인터가
+  // l: r로 이동
+  // lt: rb로 이동
+  // lb: rt로 이동
+  // --> x, y 모두 반대방향으로 이동한다
+  // 얼만큼? x,y 각각 lt 지점과 마우스 포인터와의 거리만큼
+  if (!container.value) return;
+
+  // 확대 배율 조정
+  const prevScale = scale.value;
+  const delta = e.deltaY
+  if (delta > 0) zoomOut();
+  else zoomIn();
+
+  // .element-container ~ 마우스 포인터까지 거리
+  const containerPos = container.value.getBoundingClientRect();
+  const x = (e.clientX - containerPos.x) / scale.value; 
+  const y = (e.clientY - containerPos.y) / scale.value;
+
+  const px = x / conWidth.value;
+  const py = y / conHeight.value;
+  const ds = scale.value - prevScale;
+  const dw = conWidth.value * ds;
+  const dh = conHeight.value * ds;
+  console.log('con size', conWidth.value, conHeight.value);
+  panX.value -= px * dw;
+  panY.value -= py * dh;
+}
+
+function zoomIn() {
+  scale.value += ZOOM_FACTOR;
+}
+
+function zoomOut() {
+  if (scale.value > 0.1) {
+    scale.value -= ZOOM_FACTOR;
+  }
+}
 
 function handleCanvasClick(e: MouseEvent) {
   const target = e.target as HTMLElement;
@@ -101,6 +157,7 @@ function handleCanvasClick(e: MouseEvent) {
     }
   }
 }
+
 
 onBeforeUnmount(() => {
   // 컴포넌트가 소멸되기 전에 이벤트 리스너 제거
@@ -117,7 +174,19 @@ onBeforeUnmount(() => {
     @wheel="handleWheel"
     @click="handleCanvasClick"
   >
-    <DesignElement :zoomLevel="zoomLevel" :panX="panX" :panY="panY"/>
+    <!-- <DesignElement :zoomLevel="scale" :panX="panX" :panY="panY"/> -->
+    <div 
+      ref="container"
+      class="element-container"
+      :style="{ left: panX + 'px', top: panY + 'px', width: `${conWidth * scale}px`, height: `${conHeight * scale}px` }"
+    >
+      <template v-for="element in state.elements" :key="element.id">
+        <ElementView 
+          :element="element"
+          :scale="scale"
+        />
+      </template>
+    </div>
   </div>
 </template>
 
@@ -128,5 +197,9 @@ onBeforeUnmount(() => {
   background-color: #f5f5f5;
   width: 100%;
   height: calc(100% - 3rem);
+}
+.element-container {
+  position: absolute;
+  border: 2px solid red;
 }
 </style>

@@ -4,7 +4,7 @@ import type { Element } from '@/types/Element';
 
 interface ElementState {
   elements: Element[],
-  selectedElement: Element
+  selectedElement: Element | null
 }
 
 export const useElementStore = defineStore('elementStore', () => {
@@ -18,6 +18,15 @@ export const useElementStore = defineStore('elementStore', () => {
         width: 100,
         height: 100,
         backgroundColor: '#333'
+      },
+      {
+        id: '2',
+        name: 'test2',
+        x: 300,
+        y: 300,
+        width: 300,
+        height: 250,
+        backgroundColor: '#ccc'
       }
     ],
     selectedElement: null
