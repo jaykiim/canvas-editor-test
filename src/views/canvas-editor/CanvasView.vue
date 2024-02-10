@@ -200,6 +200,6 @@ onBeforeUnmount(() => {
 }
 .element-container {
   position: absolute;
-  border: 2px solid red;
+  // border: 2px solid red;
 }
 </style>

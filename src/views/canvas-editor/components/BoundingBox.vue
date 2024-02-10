@@ -30,6 +30,7 @@ function handleMouseDown(e: MouseEvent, direction?: 'lt' | 'rt' | 'lb' | 'rb') {
 };
 
 function handleMouseMove(e: MouseEvent) {
+  if (!state.selectedElement) return;
   console.log('zoom level', props.zoomLevel);
   const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
