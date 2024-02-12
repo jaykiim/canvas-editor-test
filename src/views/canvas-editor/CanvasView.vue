@@ -132,7 +132,6 @@ function handleWheel(e: WheelEvent) {
   const ds = scale.value - prevScale;
   const dw = conWidth.value * ds;
   const dh = conHeight.value * ds;
-  console.log('con size', conWidth.value, conHeight.value);
   panX.value -= px * dw;
   panY.value -= py * dh;
 }
@@ -200,6 +199,5 @@ onBeforeUnmount(() => {
 }
 .element-container {
   position: absolute;
-  border: 2px solid red;
 }
 </style>
