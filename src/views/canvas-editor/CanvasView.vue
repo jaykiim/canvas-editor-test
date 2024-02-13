@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
 import ElementView from './components/ElementView.vue';
 
@@ -16,9 +16,12 @@ const conWidth = ref<number>(800);
 const conHeight = ref<number>(600);
 const scale = ref<number>(1); // 줌 배율
 
+const spaceKeydown = ref<boolean>(false);
+
 const { state, setSelectedElement } = useElementStore();
 
 function handleMouseDown(e: MouseEvent) {
+  console.log('mouse event: ', e)
   startDragX.value = e.clientX;
   startDragY.value = e.clientY;
   window.addEventListener('mousemove', handleMouseMove);
@@ -26,7 +29,7 @@ function handleMouseDown(e: MouseEvent) {
 }
 
 function handleMouseMove(e: MouseEvent) {
-  if (canvas.value) {
+  if (canvas.value && spaceKeydown.value) {
     const deltaX = e.clientX - startDragX.value;
     const deltaY = e.clientY - startDragY.value;
     panX.value += deltaX;
@@ -91,6 +94,22 @@ function handleCanvasClick(e: MouseEvent) {
   }
 }
 
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === " ") {
+    spaceKeydown.value = true;
+  }
+}
+
+function onKeyup(e: KeyboardEvent) {
+  if (e.key === " ") {
+    spaceKeydown.value = false;
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown);
+  window.addEventListener('keyup', onKeyup);
+})
 
 onBeforeUnmount(() => {
   // 컴포넌트가 소멸되기 전에 이벤트 리스너 제거
