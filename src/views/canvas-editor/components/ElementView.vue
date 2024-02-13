@@ -1,31 +1,64 @@
 <script setup lang="ts">
-import { type PropType, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import BoundingBox from './BoundingBox.vue';
 import { useElementStore } from '@/stores/elements';
+import type { PropType } from 'vue';
 import type { Element } from '@/types/Element';
 
-defineProps({
+const props = defineProps({
   element: { type: Object as PropType<Element>, required: true },
   scale: { type: Number, required: true },
 })
 
-const { state, setSelectedElement } = useElementStore();
+const { state, setSelectedElement, findElement } = useElementStore();
 
-const elementHovered = ref(false);
+const isMouseOver = ref(false);
+const startX = ref(0);
+const startY = ref(0);
+let elementSnapshot:Element[];
 
-function handleElementClick(element: Element){
-  elementHovered.value = false;
-  setSelectedElement(element);
+function handleMouseDown(e: MouseEvent, element: Element) {
+  isMouseOver.value = false;
+  setSelectedElement([element]);
+
+  startX.value = e.clientX;
+  startY.value = e.clientY;
+  elementSnapshot = JSON.parse(JSON.stringify(state.selectedElement));
+  window.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('mouseup', handleMouseUp);
 };
 
+function handleMouseMove(e: MouseEvent) {
+  if (!state.selectedElement.length) return;
+
+  state.selectedElement.forEach((element, i) => {
+    const dx = (e.clientX - startX.value) * (1 / props.scale);
+    const dy = (e.clientY - startY.value) * (1 / props.scale);
+    element.x = elementSnapshot[i].x + dx;
+    element.y = elementSnapshot[i].y + dy;
+  })
+}
+
+function handleMouseUp() {
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+}
+
+onBeforeUnmount(() => {
+  // 컴포넌트가 소멸되기 전에 이벤트 리스너 제거
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+});
+
 function handleMouseOver(element: Element) {
-  console.log('element hover');
-  if (state.selectedElement?.id !== element.id) {
-    elementHovered.value = true;
+  const isCurrentElementSelected = !!findElement(state.selectedElement, element.id);
+  if (!isCurrentElementSelected) {
+    isMouseOver.value = true;
   }
 }
+
 function handleMouseLeave() {
-  elementHovered.value = false;
+  isMouseOver.value = false;
 }
 </script>
 
@@ -41,36 +74,36 @@ function handleMouseLeave() {
       backgroundColor: element.backgroundColor,
       color: element.textColor,
     }"
-    @mousedown.stop="handleElementClick(element)"
+    @mousedown.stop="handleMouseDown($event, element)"
     @mouseover.stop="handleMouseOver(element)"
     @mouseleave.stop="handleMouseLeave"
   >
-    <div v-if="elementHovered" class="hover-box" />
-    <div v-if="element.id === state.selectedElement?.id" class="size-box">{{ element.width }} x {{ element.height }}</div>
-    <BoundingBox 
-      v-if="state.selectedElement && state.selectedElement.id === element.id" 
-      :zoom-level="scale"
-    />
+  <div v-if="isMouseOver" class="border-box"></div>
+    <template v-if="!!findElement(state.selectedElement, element.id)">
+      <div class="size-box">{{ element.width }} x {{ element.height }}</div>
+      <BoundingBox :zoom-level="scale"/>
+    </template>
   </div>  
 </template>
 
 <style scoped lang="scss">
-.element > .hover-box {
+.size-box {
+  white-space: nowrap;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 130%);
+  padding: 1px 3px;
+  background-color: #0d99ff;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 2px;
+}
+.border-box {
+  position: absolute;
+  border: 3px solid #4597f7;
   width: 100%;
   height: 100%;
-  border: 3px solid #4597f7;
-}
-.element > .size-box {
-  position: absolute;
-  white-space: nowrap;
-  left: 50%;
-  bottom: 0px;
-  transform: translate(-50%, 140%);
-  padding: 1px 4px;
-  background-color: #0a99ff;
-  color: #fff;
-  font-size: .7rem;
-  font-weight: 500;
-  border-radius: 3px;
 }
 </style>
