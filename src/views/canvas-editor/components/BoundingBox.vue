@@ -44,29 +44,25 @@ function handleMouseMove(e: MouseEvent) {
     const direction = resizeHandleRef.value;
     if (direction) {
       if (direction === 'lt') {
-        console.log('lt')
         l += dx;
         t += dy;
       }
       if (direction === 'rt') {
-        console.log('rt')
         r += dx;
         t += dy;
       }
       if (direction === 'lb') {
-        console.log('lb')
         l += dx;
         b += dy;
       }
       if (direction === 'rb') {
-        console.log('rb')
         r += dx;
         b += dy;
       }
       state.selectedElement.x = l;
       state.selectedElement.y = t;
-      state.selectedElement.width = r - l;
-      state.selectedElement.height = b - t;
+      state.selectedElement.width = +(r - l);
+      state.selectedElement.height = +(b - t);
 
       // 너비를 끝까지 줄일 경우 방향 변경
       if (state.selectedElement.width < 0) {
