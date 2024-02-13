@@ -33,7 +33,6 @@ function handleMouseMove(e: MouseEvent) {
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
   state.selectedElement.forEach((element, i) => {
-
     let l = elementSnapshot[i].x;
     let t = elementSnapshot[i].y;
     let r = l + elementSnapshot[i].width;
@@ -58,47 +57,24 @@ function handleMouseMove(e: MouseEvent) {
         b += dy;
       }
 
-        element.x = l;
-        element.y = t;
-        element.width = +(r - l);
-        element.height = +(b - t);
+      element.x = l;
+      element.y = t;
+      element.width = +(r - l);
+      element.height = +(b - t);
 
-        // 너비를 끝까지 줄일 경우 방향 변경
-        if (element.width < 0) {
-          element.x += element.width; // x좌표값이 기존 r값 (l + width)이 됨
-          element.width *= -1; // 너비를 양수로 변환 
-        }
+      // 너비를 끝까지 줄일 경우 방향 변경
+      if (element.width < 0) {
+        element.x += element.width; // x좌표값이 기존 r값 (l + width)이 됨
+        element.width *= -1; // 너비를 양수로 변환 
+      }
 
-        // 높이를 끝까지 줄일 경우 방향 변경
-        if (element.height < 0) {
-          element.y += element.height; // y좌표값이 기존 b값 (t + height)이 됨
-          element.height *= -1; // 높이를 양수로 변환
-        }
-      // state.selectedElement.x = l;
-      // state.selectedElement.y = t;
-      // state.selectedElement.width = +(r - l);
-      // state.selectedElement.height = +(b - t);
-
-      // // 너비를 끝까지 줄일 경우 방향 변경
-      // if (state.selectedElement.width < 0) {
-      //   state.selectedElement.x += state.selectedElement.width; // x좌표값이 기존 r값 (l + width)이 됨
-      //   state.selectedElement.width *= -1; // 너비를 양수로 변환 
-      // }
-
-      // // 높이를 끝까지 줄일 경우 방향 변경
-      // if (state.selectedElement.height < 0) {
-      //   state.selectedElement.y += state.selectedElement.height; // y좌표값이 기존 b값 (t + height)이 됨
-      //   state.selectedElement.height *= -1; // 높이를 양수로 변환
-      // }
+      // 높이를 끝까지 줄일 경우 방향 변경
+      if (element.height < 0) {
+        element.y += element.height; // y좌표값이 기존 b값 (t + height)이 됨
+        element.height *= -1; // 높이를 양수로 변환
+      }
     }
   });
-
-
-  // // 이동
-  // else {
-  //   state.selectedElement.x = elementSnapshot.x + dx;
-  //   state.selectedElement.y = elementSnapshot.y + dy;
-  // }
 };
 
 function handleMouseUp() {
