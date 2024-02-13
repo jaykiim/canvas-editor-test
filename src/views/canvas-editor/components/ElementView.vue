@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import BoundingBox from './BoundingBox.vue';
 import { useElementStore } from '@/stores/elements';
 import type { PropType } from 'vue';
 import type { Element } from '@/types/Element';
 
-defineProps({
+const props = defineProps({
   element: { type: Object as PropType<Element>, required: true },
   scale: { type: Number, required: true },
 })
@@ -13,11 +13,39 @@ defineProps({
 const { state, setSelectedElement } = useElementStore();
 
 const isMouseOver = ref(false);
+const startX = ref(0);
+const startY = ref(0);
+let elementSnapshot:Element;
 
-function handleElementClick(element: Element) {
+function handleMouseDown(e: MouseEvent, element: Element) {
   isMouseOver.value = false;
   setSelectedElement(element);
+
+  startX.value = e.clientX;
+  startY.value = e.clientY;
+  elementSnapshot = JSON.parse(JSON.stringify(state.selectedElement));
+  window.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('mouseup', handleMouseUp);
 };
+
+function handleMouseMove(e: MouseEvent) {
+  if (!state.selectedElement) return;
+  const dx = (e.clientX - startX.value) * (1 / props.scale);
+  const dy = (e.clientY - startY.value) * (1 / props.scale);
+  state.selectedElement.x = elementSnapshot.x + dx;
+  state.selectedElement.y = elementSnapshot.y + dy;
+}
+
+function handleMouseUp() {
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+}
+
+onBeforeUnmount(() => {
+  // 컴포넌트가 소멸되기 전에 이벤트 리스너 제거
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+});
 
 function handleMouseOver(element: Element) {
   if (state.selectedElement?.id !== element.id) {
@@ -42,7 +70,7 @@ function handleMouseLeave() {
       backgroundColor: element.backgroundColor,
       color: element.textColor,
     }"
-    @mousedown.stop="handleElementClick(element)"
+    @mousedown.stop="handleMouseDown($event, element)"
     @mouseover.stop="handleMouseOver(element)"
     @mouseleave.stop="handleMouseLeave"
   >

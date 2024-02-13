@@ -10,17 +10,15 @@ const props = defineProps({
 const { state } = useElementStore();
 
 const isResizing = ref(false);
-const resizeHandleRef = ref<'lt' | 'rt' | 'lb' | 'rb' | null>(null);
+const resizeDirection = ref<'lt' | 'rt' | 'lb' | 'rb' | null>(null);
 const startX = ref(0);
 const startY = ref(0);
 
 let elementSnapshot:Element;
 
-function handleMouseDown(e: MouseEvent, direction?: 'lt' | 'rt' | 'lb' | 'rb') {
-  if (direction) {
-    isResizing.value = true;
-    resizeHandleRef.value = direction;
-  }
+function handleMouseDown(e: MouseEvent, direction: 'lt' | 'rt' | 'lb' | 'rb') {
+  isResizing.value = true;
+  resizeDirection.value = direction;
   
   startX.value = e.clientX;
   startY.value = e.clientY;
@@ -34,60 +32,57 @@ function handleMouseMove(e: MouseEvent) {
   const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
-  // 크기 조정
-  if (isResizing.value) {  
-    let l = elementSnapshot.x;
-    let t = elementSnapshot.y;
-    let r = l + elementSnapshot.width;
-    let b = t + elementSnapshot.height;
+  let l = elementSnapshot.x;
+  let t = elementSnapshot.y;
+  let r = l + elementSnapshot.width;
+  let b = t + elementSnapshot.height;
 
-    const direction = resizeHandleRef.value;
-    if (direction) {
-      if (direction === 'lt') {
-        l += dx;
-        t += dy;
-      }
-      if (direction === 'rt') {
-        r += dx;
-        t += dy;
-      }
-      if (direction === 'lb') {
-        l += dx;
-        b += dy;
-      }
-      if (direction === 'rb') {
-        r += dx;
-        b += dy;
-      }
-      state.selectedElement.x = l;
-      state.selectedElement.y = t;
-      state.selectedElement.width = +(r - l);
-      state.selectedElement.height = +(b - t);
+  const direction = resizeDirection.value;
+  if (direction) {
+    if (direction === 'lt') {
+      l += dx;
+      t += dy;
+    }
+    if (direction === 'rt') {
+      r += dx;
+      t += dy;
+    }
+    if (direction === 'lb') {
+      l += dx;
+      b += dy;
+    }
+    if (direction === 'rb') {
+      r += dx;
+      b += dy;
+    }
+    state.selectedElement.x = l;
+    state.selectedElement.y = t;
+    state.selectedElement.width = +(r - l);
+    state.selectedElement.height = +(b - t);
 
-      // 너비를 끝까지 줄일 경우 방향 변경
-      if (state.selectedElement.width < 0) {
-        state.selectedElement.x += state.selectedElement.width; // x좌표값이 기존 r값 (l + width)이 됨
-        state.selectedElement.width *= -1; // 너비를 양수로 변환 
-      }
+    // 너비를 끝까지 줄일 경우 방향 변경
+    if (state.selectedElement.width < 0) {
+      state.selectedElement.x += state.selectedElement.width; // x좌표값이 기존 r값 (l + width)이 됨
+      state.selectedElement.width *= -1; // 너비를 양수로 변환 
+    }
 
-      // 높이를 끝까지 줄일 경우 방향 변경
-      if (state.selectedElement.height < 0) {
-        state.selectedElement.y += state.selectedElement.height; // y좌표값이 기존 b값 (t + height)이 됨
-        state.selectedElement.height *= -1; // 높이를 양수로 변환
-      }
+    // 높이를 끝까지 줄일 경우 방향 변경
+    if (state.selectedElement.height < 0) {
+      state.selectedElement.y += state.selectedElement.height; // y좌표값이 기존 b값 (t + height)이 됨
+      state.selectedElement.height *= -1; // 높이를 양수로 변환
     }
   }
 
-  // 이동
-  else {
-    state.selectedElement.x = elementSnapshot.x + dx;
-    state.selectedElement.y = elementSnapshot.y + dy;
-  }
+  // // 이동
+  // else {
+  //   state.selectedElement.x = elementSnapshot.x + dx;
+  //   state.selectedElement.y = elementSnapshot.y + dy;
+  // }
 };
 
 function handleMouseUp() {
   isResizing.value = false;
-  resizeHandleRef.value = null;
+  resizeDirection.value = null;
 
   window.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('mouseup', handleMouseUp);
@@ -104,7 +99,6 @@ onBeforeUnmount(() => {
   <div 
     ref="boundingBox" 
     class="bounding-box"
-    @mousedown.stop="handleMouseDown" 
   >
     <div 
       ref="resizeHandleTopLeft" 
