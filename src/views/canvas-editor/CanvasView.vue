@@ -34,6 +34,8 @@ const dragboxHeight = ref<number>(0);
 const { state, setSelectedElement } = useElementStore();
 
 function handleMouseDown(e: MouseEvent) {
+  setSelectedElement([]);
+
   startDragX.value = e.clientX;
   startDragY.value = e.clientY;
 
@@ -81,6 +83,8 @@ function handleMouseMove(e: MouseEvent) {
       dragboxY.value = e.clientY - canvasTop;
       dragboxHeight.value *= -1;
     }
+
+    // 영역 내 엘리먼트 존재 시 선택 목록에 추가
   }
 }
 
@@ -129,17 +133,6 @@ function zoomOut() {
   }
 }
 
-function handleCanvasClick(e: MouseEvent) {
-  const target = e.target as HTMLElement;
-  if (target) {
-    const clickedElement = target.closest('.element');
-    // 클릭한 요소의 조상 중에 .element가 없는 경우 = 빈 공간을 클릭한 경우
-    if (!clickedElement) { 
-      setSelectedElement([]);
-    }
-  }
-}
-
 function onKeydown(e: KeyboardEvent) {
   if (e.key === " ") {
     spaceKeydown.value = true;
@@ -170,7 +163,6 @@ onBeforeUnmount(() => {
     class="canvas"
     @mousedown="handleMouseDown" 
     @wheel="handleWheel"
-    @click="handleCanvasClick"
   >
     <DragBox 
       v-if="showDragbox" 
