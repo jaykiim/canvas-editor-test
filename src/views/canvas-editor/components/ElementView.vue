@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import { ref } from 'vue';
 import BoundingBox from './BoundingBox.vue';
 import { useElementStore } from '@/stores/elements';
+import type { PropType } from 'vue';
 import type { Element } from '@/types/Element';
 
 defineProps({
@@ -11,9 +12,22 @@ defineProps({
 
 const { state, setSelectedElement } = useElementStore();
 
-const handleElementClick = (element: Element) => {
+const isMouseOver = ref(false);
+
+function handleElementClick(element: Element) {
+  isMouseOver.value = false;
   setSelectedElement(element);
 };
+
+function handleMouseOver(element: Element) {
+  if (state.selectedElement?.id !== element.id) {
+    isMouseOver.value = true;
+  }
+}
+
+function handleMouseLeave() {
+  isMouseOver.value = false;
+}
 </script>
 
 <template>
@@ -29,10 +43,34 @@ const handleElementClick = (element: Element) => {
       color: element.textColor,
     }"
     @mousedown.stop="handleElementClick(element)"
+    @mouseover.stop="handleMouseOver(element)"
+    @mouseleave.stop="handleMouseLeave"
   >
-    <BoundingBox 
-      v-if="state.selectedElement && state.selectedElement.id === element.id" 
-      :zoom-level="scale"
-    />
+  <div v-if="isMouseOver" class="border-box"></div>
+    <template v-if="element.id === state.selectedElement?.id">
+      <div class="size-box">{{ element.width }} x {{ element.height }}</div>
+      <BoundingBox :zoom-level="scale"/>
+    </template>
   </div>  
 </template>
+
+<style scoped lang="scss">
+.size-box {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 130%);
+  padding: 1px 3px;
+  background-color: #0d99ff;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 2px;
+}
+.border-box {
+  position: absolute;
+  border: 3px solid #4597f7;
+  width: 100%;
+  height: 100%;
+}
+</style>
