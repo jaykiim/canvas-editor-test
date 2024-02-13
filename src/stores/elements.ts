@@ -4,7 +4,7 @@ import type { Element } from '@/types/Element';
 
 interface ElementState {
   elements: Element[],
-  selectedElement: Element | null
+  selectedElement: Element[];
 }
 
 export const useElementStore = defineStore('elementStore', () => {
@@ -29,7 +29,7 @@ export const useElementStore = defineStore('elementStore', () => {
         backgroundColor: '#ccc'
       }
     ],
-    selectedElement: null
+    selectedElement: []
   })
   // const elements = reactive<Element[]>([
   //   {
@@ -49,20 +49,23 @@ export const useElementStore = defineStore('elementStore', () => {
     state.elements.push(element);
   }
 
-  function getElements() {
-    return state.elements;
+  function findElement(range: Element[], id: string) {
+    return range.find(element => element.id === id);
   }
 
-  function getSelectedElement() {
-    return state.selectedElement;
-  }
-
-  function setSelectedElement(element: Element | null) {
+  function setSelectedElement(element: Element[]) {
     state.selectedElement = element;
   }
 
+  function addSelectedElement(element: Element) {
+    state.selectedElement.push(element);
+  }
+
+  function removeSelectedElement(element: Element) {
+    state.selectedElement = state.selectedElement.filter(el => el.id !== element.id);
+  }
 
   // 다른 필요한 메서드 추가 가능
 
-  return { state, addElement, getElements, getSelectedElement, setSelectedElement };
+  return { state, addElement, findElement, setSelectedElement, addSelectedElement, removeSelectedElement };
 });

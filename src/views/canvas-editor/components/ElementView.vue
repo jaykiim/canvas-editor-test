@@ -10,16 +10,16 @@ const props = defineProps({
   scale: { type: Number, required: true },
 })
 
-const { state, setSelectedElement } = useElementStore();
+const { state, setSelectedElement, findElement } = useElementStore();
 
 const isMouseOver = ref(false);
 const startX = ref(0);
 const startY = ref(0);
-let elementSnapshot:Element;
+let elementSnapshot:Element[];
 
 function handleMouseDown(e: MouseEvent, element: Element) {
   isMouseOver.value = false;
-  setSelectedElement(element);
+  setSelectedElement([element]);
 
   startX.value = e.clientX;
   startY.value = e.clientY;
@@ -29,11 +29,14 @@ function handleMouseDown(e: MouseEvent, element: Element) {
 };
 
 function handleMouseMove(e: MouseEvent) {
-  if (!state.selectedElement) return;
-  const dx = (e.clientX - startX.value) * (1 / props.scale);
-  const dy = (e.clientY - startY.value) * (1 / props.scale);
-  state.selectedElement.x = elementSnapshot.x + dx;
-  state.selectedElement.y = elementSnapshot.y + dy;
+  if (!state.selectedElement.length) return;
+
+  state.selectedElement.forEach((element, i) => {
+    const dx = (e.clientX - startX.value) * (1 / props.scale);
+    const dy = (e.clientY - startY.value) * (1 / props.scale);
+    element.x = elementSnapshot[i].x + dx;
+    element.y = elementSnapshot[i].y + dy;
+  })
 }
 
 function handleMouseUp() {
@@ -48,7 +51,8 @@ onBeforeUnmount(() => {
 });
 
 function handleMouseOver(element: Element) {
-  if (state.selectedElement?.id !== element.id) {
+  const isCurrentElementSelected = !!findElement(state.selectedElement, element.id);
+  if (!isCurrentElementSelected) {
     isMouseOver.value = true;
   }
 }
@@ -75,7 +79,7 @@ function handleMouseLeave() {
     @mouseleave.stop="handleMouseLeave"
   >
   <div v-if="isMouseOver" class="border-box"></div>
-    <template v-if="element.id === state.selectedElement?.id">
+    <template v-if="!!findElement(state.selectedElement, element.id)">
       <div class="size-box">{{ element.width }} x {{ element.height }}</div>
       <BoundingBox :zoom-level="scale"/>
     </template>

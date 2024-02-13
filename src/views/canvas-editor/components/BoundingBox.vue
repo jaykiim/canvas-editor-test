@@ -14,7 +14,7 @@ const resizeDirection = ref<'lt' | 'rt' | 'lb' | 'rb' | null>(null);
 const startX = ref(0);
 const startY = ref(0);
 
-let elementSnapshot:Element;
+let elementSnapshot:Element[];
 
 function handleMouseDown(e: MouseEvent, direction: 'lt' | 'rt' | 'lb' | 'rb') {
   isResizing.value = true;
@@ -32,46 +32,67 @@ function handleMouseMove(e: MouseEvent) {
   const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
-  let l = elementSnapshot.x;
-  let t = elementSnapshot.y;
-  let r = l + elementSnapshot.width;
-  let b = t + elementSnapshot.height;
+  state.selectedElement.forEach((element, i) => {
 
-  const direction = resizeDirection.value;
-  if (direction) {
-    if (direction === 'lt') {
-      l += dx;
-      t += dy;
-    }
-    if (direction === 'rt') {
-      r += dx;
-      t += dy;
-    }
-    if (direction === 'lb') {
-      l += dx;
-      b += dy;
-    }
-    if (direction === 'rb') {
-      r += dx;
-      b += dy;
-    }
-    state.selectedElement.x = l;
-    state.selectedElement.y = t;
-    state.selectedElement.width = +(r - l);
-    state.selectedElement.height = +(b - t);
+    let l = elementSnapshot[i].x;
+    let t = elementSnapshot[i].y;
+    let r = l + elementSnapshot[i].width;
+    let b = t + elementSnapshot[i].height;
 
-    // 너비를 끝까지 줄일 경우 방향 변경
-    if (state.selectedElement.width < 0) {
-      state.selectedElement.x += state.selectedElement.width; // x좌표값이 기존 r값 (l + width)이 됨
-      state.selectedElement.width *= -1; // 너비를 양수로 변환 
-    }
+    const direction = resizeDirection.value;
+    if (direction) {
+      if (direction === 'lt') {
+        l += dx;
+        t += dy;
+      }
+      if (direction === 'rt') {
+        r += dx;
+        t += dy;
+      }
+      if (direction === 'lb') {
+        l += dx;
+        b += dy;
+      }
+      if (direction === 'rb') {
+        r += dx;
+        b += dy;
+      }
 
-    // 높이를 끝까지 줄일 경우 방향 변경
-    if (state.selectedElement.height < 0) {
-      state.selectedElement.y += state.selectedElement.height; // y좌표값이 기존 b값 (t + height)이 됨
-      state.selectedElement.height *= -1; // 높이를 양수로 변환
+        element.x = l;
+        element.y = t;
+        element.width = +(r - l);
+        element.height = +(b - t);
+
+        // 너비를 끝까지 줄일 경우 방향 변경
+        if (element.width < 0) {
+          element.x += element.width; // x좌표값이 기존 r값 (l + width)이 됨
+          element.width *= -1; // 너비를 양수로 변환 
+        }
+
+        // 높이를 끝까지 줄일 경우 방향 변경
+        if (element.height < 0) {
+          element.y += element.height; // y좌표값이 기존 b값 (t + height)이 됨
+          element.height *= -1; // 높이를 양수로 변환
+        }
+      // state.selectedElement.x = l;
+      // state.selectedElement.y = t;
+      // state.selectedElement.width = +(r - l);
+      // state.selectedElement.height = +(b - t);
+
+      // // 너비를 끝까지 줄일 경우 방향 변경
+      // if (state.selectedElement.width < 0) {
+      //   state.selectedElement.x += state.selectedElement.width; // x좌표값이 기존 r값 (l + width)이 됨
+      //   state.selectedElement.width *= -1; // 너비를 양수로 변환 
+      // }
+
+      // // 높이를 끝까지 줄일 경우 방향 변경
+      // if (state.selectedElement.height < 0) {
+      //   state.selectedElement.y += state.selectedElement.height; // y좌표값이 기존 b값 (t + height)이 됨
+      //   state.selectedElement.height *= -1; // 높이를 양수로 변환
+      // }
     }
-  }
+  });
+
 
   // // 이동
   // else {

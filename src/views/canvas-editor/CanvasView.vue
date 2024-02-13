@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
-// import DesignElement from './components/DesignElement.vue'
 import ElementView from './components/ElementView.vue';
 
 const ZOOM_FACTOR = 0.05;
@@ -152,7 +151,7 @@ function handleCanvasClick(e: MouseEvent) {
     const clickedElement = target.closest('.element');
     // 클릭한 요소의 조상 중에 .element가 없는 경우 = 빈 공간을 클릭한 경우
     if (!clickedElement) { 
-      setSelectedElement(null);
+      setSelectedElement([]);
     }
   }
 }
