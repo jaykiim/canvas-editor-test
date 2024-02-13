@@ -29,6 +29,7 @@ defineProps({
   height: 100%;
 }
 .drag-box {
+  z-index: 9999;
   position: absolute;
   background-color: #4597f74d;
   border: 1px solid #4597f7;
