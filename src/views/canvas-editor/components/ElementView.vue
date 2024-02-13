@@ -56,6 +56,7 @@ function handleMouseLeave() {
 
 <style scoped lang="scss">
 .size-box {
+  white-space: nowrap;
   position: absolute;
   left: 50%;
   bottom: 0;
