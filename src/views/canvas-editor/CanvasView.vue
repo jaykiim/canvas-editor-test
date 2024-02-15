@@ -85,6 +85,21 @@ function handleMouseMove(e: MouseEvent) {
     }
 
     // 영역 내 엘리먼트 존재 시 선택 목록에 추가
+    const l1 = dragboxX.value;
+    const t1 = dragboxY.value;
+    const r1 = l1 + dragboxWidth.value;
+    const b1 = t1 + dragboxHeight.value;
+
+    const selected = state.elements.filter(e => {
+      const l2 = e.x * scale.value + panX.value;
+      const t2 = e.y * scale.value + panY.value;
+      const r2 = l2 + e.width * scale.value;
+      const b2 = t2 + e.height * scale.value;
+      if ((l1 <= r2 && t1 <= b2) && (l2 <= r1 && t2 <= b1)) return true;
+      else return false;  
+    });
+
+    setSelectedElement(selected);
   }
 }
 
@@ -197,5 +212,6 @@ onBeforeUnmount(() => {
 }
 .element-container {
   position: absolute;
+  border: 3px solid red;
 }
 </style>
