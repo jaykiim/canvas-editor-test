@@ -2,7 +2,7 @@
 import { inject, onBeforeUnmount, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
 import BoundingBox from './BoundingBox.vue';
-import type { PropType } from 'vue';
+import type { PropType, Ref } from 'vue';
 import type { Element } from '@/types/Element';
 import type { MouseActionType } from '@/types/Canvas'; 
 
@@ -11,7 +11,7 @@ const props = defineProps({
   scale: { type: Number, required: true },
 });
 
-const currentAction = inject<MouseActionType>('currentAction');
+const currentAction = inject<Ref<MouseActionType>>('currentAction');
 const setCurrentAction = inject<(action: MouseActionType) => void>('setCurrentAction');
 
 const { state, setSelectedElement, findElement } = useElementStore();
@@ -58,7 +58,9 @@ onBeforeUnmount(() => {
 
 function handleMouseOver(element: Element) {
   const isCurrentElementSelected = !!findElement(state.selectedElement, element.id);
-  if (!isCurrentElementSelected && !currentAction) {
+  console.log('isCurrentElementSelected', isCurrentElementSelected);
+  console.log('currentAction', currentAction);
+  if (!isCurrentElementSelected && !currentAction?.value) {
     isMouseOver.value = true;
   }
 }
