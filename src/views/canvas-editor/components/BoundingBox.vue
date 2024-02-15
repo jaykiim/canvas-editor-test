@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue';
+import { inject, onBeforeUnmount, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
 import type { Element } from '@/types/Element';
+import type { MouseActionType } from '@/types/Canvas';
 
 const props = defineProps({
   zoomLevel: { type: Number, required: true }
 });
+
+const setCurrentAction = inject<(action: MouseActionType) => void>('setCurrentAction');
 
 const { state } = useElementStore();
 
@@ -29,6 +32,8 @@ function handleMouseDown(e: MouseEvent, direction: 'lt' | 'rt' | 'lb' | 'rb') {
 
 function handleMouseMove(e: MouseEvent) {
   if (!state.selectedElement) return;
+  if (setCurrentAction) setCurrentAction('resize-element');
+
   const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
@@ -59,8 +64,8 @@ function handleMouseMove(e: MouseEvent) {
 
       element.x = l;
       element.y = t;
-      element.width = +(r - l);
-      element.height = +(b - t);
+      element.width = Math.round(r - l);
+      element.height = Math.round(b - t);
 
       // 너비를 끝까지 줄일 경우 방향 변경
       if (element.width < 0) {
@@ -78,6 +83,7 @@ function handleMouseMove(e: MouseEvent) {
 };
 
 function handleMouseUp() {
+  if (setCurrentAction) setCurrentAction('');
   isResizing.value = false;
   resizeDirection.value = null;
 

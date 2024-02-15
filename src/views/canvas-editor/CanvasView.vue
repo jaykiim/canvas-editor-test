@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
 import ElementView from './components/ElementView.vue';
 import DragBox from './components/DragBox.vue';
+import type { MouseActionType } from '@/types/Canvas'; 
 
 const canvas = ref<HTMLDivElement>();
+const currentAction = ref<MouseActionType>('');
 
 // keyboard 
 const spaceKeydown = ref<boolean>(false);
@@ -57,6 +59,7 @@ function handleMouseMove(e: MouseEvent) {
 
   // 패닝
   if (spaceKeydown.value && !showDragbox.value) {
+    setCurrentAction('move-canvas');
     panX.value += deltaX;
     panY.value += deltaY;
     startDragX.value = e.clientX;
@@ -65,6 +68,7 @@ function handleMouseMove(e: MouseEvent) {
 
   // 영역 선택 
   else if (canvas.value) {
+    setCurrentAction('select-area');
     const canvasTop = canvas.value.getBoundingClientRect().top;
     deltaY -= canvasTop;
 
@@ -105,6 +109,7 @@ function handleMouseMove(e: MouseEvent) {
 
 function handleMouseUp() {
   showDragbox.value = false;
+  setCurrentAction('');
   window.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('mouseup', handleMouseUp);
 }
@@ -160,6 +165,13 @@ function onKeyup(e: KeyboardEvent) {
   }
 }
 
+function setCurrentAction(action: MouseActionType) {
+  currentAction.value = action;
+}
+
+provide('currentAction', currentAction);
+provide('setCurrentAction', setCurrentAction);
+
 onMounted(() => {
   window.addEventListener('keydown', onKeydown);
   window.addEventListener('keyup', onKeyup);
@@ -212,6 +224,5 @@ onBeforeUnmount(() => {
 }
 .element-container {
   position: absolute;
-  border: 3px solid red;
 }
 </style>

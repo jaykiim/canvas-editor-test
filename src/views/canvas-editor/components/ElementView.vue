@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue';
-import BoundingBox from './BoundingBox.vue';
+import { inject, onBeforeUnmount, ref } from 'vue';
 import { useElementStore } from '@/stores/elements';
+import BoundingBox from './BoundingBox.vue';
 import type { PropType } from 'vue';
 import type { Element } from '@/types/Element';
+import type { MouseActionType } from '@/types/Canvas'; 
 
 const props = defineProps({
   element: { type: Object as PropType<Element>, required: true },
   scale: { type: Number, required: true },
-})
+});
+
+const currentAction = inject<MouseActionType>('currentAction');
+const setCurrentAction = inject<(action: MouseActionType) => void>('setCurrentAction');
 
 const { state, setSelectedElement, findElement } = useElementStore();
 
@@ -30,6 +34,7 @@ function handleMouseDown(e: MouseEvent, element: Element) {
 
 function handleMouseMove(e: MouseEvent) {
   if (!state.selectedElement.length) return;
+  if (setCurrentAction) setCurrentAction('move-element');
 
   state.selectedElement.forEach((element, i) => {
     const dx = (e.clientX - startX.value) * (1 / props.scale);
@@ -40,6 +45,7 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleMouseUp() {
+  if (setCurrentAction) setCurrentAction('');
   window.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('mouseup', handleMouseUp);
 }
@@ -52,7 +58,7 @@ onBeforeUnmount(() => {
 
 function handleMouseOver(element: Element) {
   const isCurrentElementSelected = !!findElement(state.selectedElement, element.id);
-  if (!isCurrentElementSelected) {
+  if (!isCurrentElementSelected && !currentAction) {
     isMouseOver.value = true;
   }
 }
