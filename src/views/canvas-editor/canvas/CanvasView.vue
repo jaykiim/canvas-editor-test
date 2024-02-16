@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, provide, ref } from 'vue';
-import { useElementStore } from '@/stores/elements';
-import ElementView from './components/ElementView.vue';
+import { useElementStore } from '../stores/elements';
+import { usePageStore } from '../stores/pages';
+import PageView from './PageView.vue';
 import DragBox from './components/DragBox.vue';
 import type { MouseActionType } from '@/types/Canvas'; 
 
@@ -19,12 +20,12 @@ const startDragY = ref<number>(0);
 const ZOOM_FACTOR = 0.05;
 const scale = ref<number>(1); // 줌 배율
 
-// .element-page
-const page = ref<HTMLDivElement>();
+// page
+const { currentPage: page } = usePageStore();
 const panX = ref<number>(0);
 const panY = ref<number>(0);
-const conWidth = ref<number>(800);
-const conHeight = ref<number>(600);
+const pageW = ref<number>(800);
+const pageH = ref<number>(600);
 
 // drag-box
 const showDragbox = ref<boolean>(false);
@@ -37,7 +38,6 @@ const { state, setSelectedElement } = useElementStore();
 
 function handleMouseDown(e: MouseEvent) {
   setSelectedElement([]);
-
   startDragX.value = e.clientX;
   startDragY.value = e.clientY;
 
@@ -123,7 +123,7 @@ function handleWheel(e: WheelEvent) {
   // lb: rt로 이동
   // --> x, y 모두 반대방향으로 이동한다
   // 얼만큼? x,y 각각 lt 지점과 마우스 포인터와의 거리만큼
-  if (!page.value) return;
+  if (!page.ref) return;
 
   // 확대 배율 조정
   const prevScale = scale.value;
@@ -132,15 +132,15 @@ function handleWheel(e: WheelEvent) {
   else zoomIn();
 
   // .element-page ~ 마우스 포인터까지 거리
-  const pagePos = page.value.getBoundingClientRect();
+  const pagePos = page.ref.getBoundingClientRect();
   const x = (e.clientX - pagePos.x) / scale.value; 
   const y = (e.clientY - pagePos.y) / scale.value;
 
-  const px = x / conWidth.value;
-  const py = y / conHeight.value;
+  const px = x / pageW.value;
+  const py = y / pageH.value;
   const ds = scale.value - prevScale;
-  const dw = conWidth.value * ds;
-  const dh = conHeight.value * ds;
+  const dw = pageW.value * ds;
+  const dh = pageH.value * ds;
   panX.value -= px * dw;
   panY.value -= py * dh;
 }
@@ -201,18 +201,11 @@ onBeforeUnmount(() => {
       :height="dragboxHeight" 
       :scale="scale"
     />
-    <div 
-      ref="page"
-      class="page"
-      :style="{ left: panX + 'px', top: panY + 'px', width: `${conWidth * scale}px`, height: `${conHeight * scale}px` }"
-    >
-      <template v-for="element in state.elements" :key="element.id">
-        <ElementView 
-          :element="element"
-          :scale="scale"
-        />
-      </template>
-    </div>
+    <PageView
+      :scale="scale"
+      :pan-x="panX"
+      :pan-y="panY"
+    />
   </div>
 </template>
 
@@ -223,8 +216,5 @@ onBeforeUnmount(() => {
   background-color: #f5f5f5;
   width: 100%;
   height: 100%;
-  .page {
-    position: absolute;
-  }
 }
 </style>

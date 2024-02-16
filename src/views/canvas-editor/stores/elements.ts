@@ -1,14 +1,9 @@
 import { reactive } from 'vue';
 import { defineStore } from 'pinia';
-import type { Element } from '@/types/Element';
-
-interface ElementState {
-  elements: Element[],
-  selectedElement: Element[];
-}
+import type { ElementStore, Element } from '@/types/Element';
 
 export const useElementStore = defineStore('elementStore', () => {
-  const state = reactive<ElementState>({
+  const state = reactive<ElementStore>({
     elements: [
       {
         id: '1',

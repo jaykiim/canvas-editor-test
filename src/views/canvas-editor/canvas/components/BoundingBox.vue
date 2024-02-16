@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject, onBeforeUnmount, ref } from 'vue';
-import { useElementStore } from '@/stores/elements';
+import { useElementStore } from '../..//stores/elements';
 import type { Element } from '@/types/Element';
 import type { MouseActionType } from '@/types/Canvas';
 
@@ -171,4 +171,4 @@ onBeforeUnmount(() => {
     }
   }
 }
-</style>
+</style>@/views/canvas-editor/stores/elements

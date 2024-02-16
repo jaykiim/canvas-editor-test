@@ -15,7 +15,7 @@ function onClickTab(tab: typeof TABS[number]) {
   <div class="lnb-container">
 
     <!-- Tabs -->
-    <div class="contents border-bottom">
+    <div class="tab-container">
       <div 
         v-for="tab of TABS" 
         :key="tab"
@@ -27,7 +27,7 @@ function onClickTab(tab: typeof TABS[number]) {
       </div>
     </div>
 
-    <div class="contents">
+    <div class="contents-container">
       <PagesView v-if="selectedTab === 'Pages'"/>
     </div>
   </div>
@@ -40,28 +40,28 @@ function onClickTab(tab: typeof TABS[number]) {
   background-color: #fff;
   border-right: 1px solid #e6e6e6;
   
-  .contents {
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
+}
+.tab-container {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #e6e6e6;
+  .tab {
+    color: #ababab;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    &.selected {
+      color: #333;
+    }
   
-    &.border-bottom {
-      border-bottom: 1px solid #e6e6e6;
+    &:hover {
+      color: #333;
     }
   }
 }
 
-.tab {
-  color: #ababab;
-  font-weight: 500;
-  font-size: 0.8rem;
-  cursor: pointer;
-  &.selected {
-    color: #333;
-  }
-
-  &:hover {
-    color: #8f8f8f;
-  }
+.contents-container {
+  padding: 10px 15px;
 }
 </style>

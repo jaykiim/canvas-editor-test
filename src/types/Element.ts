@@ -1,3 +1,8 @@
+interface ElementStore {
+  elements: Element[],
+  selectedElement: Element[];
+}
+
 interface Element {
   // 엘리먼트의 기본 속성
   id: string;
@@ -26,4 +31,4 @@ interface Group extends Element {
   isGroup: true;
 }
 
-export type { Element };
+export type { ElementStore, Element };

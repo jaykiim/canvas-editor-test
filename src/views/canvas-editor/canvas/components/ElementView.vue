@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject, onBeforeUnmount, ref } from 'vue';
-import { useElementStore } from '@/stores/elements';
+import { useElementStore } from '../../stores/elements';
 import BoundingBox from './BoundingBox.vue';
 import type { PropType, Ref } from 'vue';
 import type { Element } from '@/types/Element';
@@ -112,4 +112,4 @@ function handleMouseLeave() {
   width: 100%;
   height: 100%;
 }
-</style>
+</style>@/views/canvas-editor/stores/elements

@@ -1,4 +1,14 @@
 <script setup lang="ts">
+import { usePageStore } from '../stores/pages';
+
+const { pageStore, currentPage, setCurrentPageId } = usePageStore();
+
+function onClickPage(id: string) {
+  // console.log('currentPage', currentPage, pageStore[id]);
+  // Object.assign(pageStore[id], currentPage);
+  setCurrentPageId(id);
+  console.log('current page id ', currentPage.id);
+}
 </script>
 
 <template>
@@ -6,8 +16,16 @@
     <div class="btn-add">+</div>
   </div>
 
-  <div class="list">
-    
+  <div class="page-list">
+    <div 
+      v-for="page in pageStore" 
+      :class="currentPage.id === page.id ? 'selected' : ''" 
+      :key="page.id" 
+      class="page-item"
+      @click="onClickPage(page.id)"
+    >
+      {{ page.name }}
+    </div>
   </div>
 </template>
 
@@ -22,5 +40,19 @@
   font-weight: bold;
   cursor: pointer;
  }
+}
+
+.page-item {
+  color: #ababab;
+  font-weight: 500;
+  font-size: 0.8rem;
+  cursor: pointer;
+  &.selected {
+    color: #333;
+  }
+
+  &:hover {
+    color: #333;
+  }
 }
 </style>
