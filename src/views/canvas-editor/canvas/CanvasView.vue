@@ -19,8 +19,8 @@ const startDragY = ref<number>(0);
 const ZOOM_FACTOR = 0.05;
 const scale = ref<number>(1); // 줌 배율
 
-// .element-container
-const container = ref<HTMLDivElement>();
+// .element-page
+const page = ref<HTMLDivElement>();
 const panX = ref<number>(0);
 const panY = ref<number>(0);
 const conWidth = ref<number>(800);
@@ -43,8 +43,9 @@ function handleMouseDown(e: MouseEvent) {
 
   // 영역 드래그 시
   if (!spaceKeydown.value && canvas.value) {
-    const canvasTop = canvas.value.getBoundingClientRect().top;
-    startDragY.value -= canvasTop;
+    const canvasRect = canvas.value.getBoundingClientRect();
+    startDragX.value -= canvasRect.left;
+    startDragY.value -= canvasRect.top;
     dragboxX.value = startDragX.value;
     dragboxY.value = startDragY.value;
   } 
@@ -69,8 +70,9 @@ function handleMouseMove(e: MouseEvent) {
   // 영역 선택 
   else if (canvas.value) {
     setCurrentAction('select-area');
-    const canvasTop = canvas.value.getBoundingClientRect().top;
-    deltaY -= canvasTop;
+    const canvasRect = canvas.value.getBoundingClientRect();
+    deltaX -= canvasRect.left;
+    deltaY -= canvasRect.top;
 
     showDragbox.value = true; 
     dragboxWidth.value = deltaX;
@@ -78,13 +80,13 @@ function handleMouseMove(e: MouseEvent) {
 
     // 너비를 끝까지 줄일 경우 방향 변경
     if (dragboxWidth.value < 0) {
-      dragboxX.value = e.clientX; 
+      dragboxX.value = e.clientX - canvasRect.left; 
       dragboxWidth.value *= -1;
     }
 
     // 높이를 끝까지 줄일 경우 방향 변경
     if (dragboxHeight.value < 0) {
-      dragboxY.value = e.clientY - canvasTop;
+      dragboxY.value = e.clientY - canvasRect.top;
       dragboxHeight.value *= -1;
     }
 
@@ -115,13 +117,13 @@ function handleMouseUp() {
 }
 
 function handleWheel(e: WheelEvent) {
-  // container lt를 기준으로 마우스 포인터가
+  // page lt를 기준으로 마우스 포인터가
   // l: r로 이동
   // lt: rb로 이동
   // lb: rt로 이동
   // --> x, y 모두 반대방향으로 이동한다
   // 얼만큼? x,y 각각 lt 지점과 마우스 포인터와의 거리만큼
-  if (!container.value) return;
+  if (!page.value) return;
 
   // 확대 배율 조정
   const prevScale = scale.value;
@@ -129,10 +131,10 @@ function handleWheel(e: WheelEvent) {
   if (delta > 0) zoomOut();
   else zoomIn();
 
-  // .element-container ~ 마우스 포인터까지 거리
-  const containerPos = container.value.getBoundingClientRect();
-  const x = (e.clientX - containerPos.x) / scale.value; 
-  const y = (e.clientY - containerPos.y) / scale.value;
+  // .element-page ~ 마우스 포인터까지 거리
+  const pagePos = page.value.getBoundingClientRect();
+  const x = (e.clientX - pagePos.x) / scale.value; 
+  const y = (e.clientY - pagePos.y) / scale.value;
 
   const px = x / conWidth.value;
   const py = y / conHeight.value;
@@ -200,8 +202,8 @@ onBeforeUnmount(() => {
       :scale="scale"
     />
     <div 
-      ref="container"
-      class="element-container"
+      ref="page"
+      class="page"
       :style="{ left: panX + 'px', top: panY + 'px', width: `${conWidth * scale}px`, height: `${conHeight * scale}px` }"
     >
       <template v-for="element in state.elements" :key="element.id">
@@ -220,9 +222,9 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background-color: #f5f5f5;
   width: 100%;
-  height: calc(100% - 3rem);
-}
-.element-container {
-  position: absolute;
+  height: 100%;
+  .page {
+    position: absolute;
+  }
 }
 </style>

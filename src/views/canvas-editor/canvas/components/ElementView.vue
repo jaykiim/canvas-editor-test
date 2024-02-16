@@ -22,8 +22,8 @@ const startY = ref(0);
 let elementSnapshot:Element[];
 
 function handleMouseDown(e: MouseEvent, element: Element) {
-  isMouseOver.value = false;
-  setSelectedElement([element]);
+  isMouseOver.value = false; 
+  setSelectedElement([element]); // 추후 실행 취소 기능 개발 시 lastAction이 selectArea인 경우 제외하고 실행
 
   startX.value = e.clientX;
   startY.value = e.clientY;
@@ -58,8 +58,6 @@ onBeforeUnmount(() => {
 
 function handleMouseOver(element: Element) {
   const isCurrentElementSelected = !!findElement(state.selectedElement, element.id);
-  console.log('isCurrentElementSelected', isCurrentElementSelected);
-  console.log('currentAction', currentAction);
   if (!isCurrentElementSelected && !currentAction?.value) {
     isMouseOver.value = true;
   }
