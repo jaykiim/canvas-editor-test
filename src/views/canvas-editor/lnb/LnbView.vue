@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import PagesView from './PagesView.vue';
 
 const TABS = ['Pages', 'Layers', 'Assets'];
 
@@ -27,11 +28,7 @@ function onClickTab(tab: typeof TABS[number]) {
     </div>
 
     <div class="contents">
-      <div class="header">
-        <div class="btn-add">+</div>
-      </div>
-
-
+      <PagesView v-if="selectedTab === 'Pages'"/>
     </div>
   </div>
 </template>
@@ -66,16 +63,5 @@ function onClickTab(tab: typeof TABS[number]) {
   &:hover {
     color: #8f8f8f;
   }
-}
-
-.header {
-  flex: 1;
-  margin-top: -10px;
- .btn-add {
-  font-size: 1.2rem;
-  text-align: right;
-  font-weight: bold;
-  cursor: pointer;
- }
 }
 </style>
