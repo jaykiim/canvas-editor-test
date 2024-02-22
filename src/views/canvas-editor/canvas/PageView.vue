@@ -10,11 +10,11 @@ defineProps({
 });
 
 // page init
-const { currentPage: page, setPageRef } = usePageStore();
+const { currentPage: page, bindPageRef } = usePageStore();
 const pageRef = ref<HTMLDivElement>();
 onMounted(() => {
   if (pageRef.value) {
-    setPageRef(page.id, pageRef.value);
+    bindPageRef(page.id, pageRef.value);
   }
 });
 </script>
@@ -38,6 +38,5 @@ onMounted(() => {
 .page {
   position: absolute;
   background-color: #fff;
-  transform: translate(50%, 25%);
 }
 </style>
