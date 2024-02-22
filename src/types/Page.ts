@@ -7,6 +7,7 @@ interface PageType {
   width: number;
   height: number;
   elements: Element[];  
+  selectedElements: Element[];
 }
 
 interface PageStore {

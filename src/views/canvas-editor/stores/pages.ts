@@ -1,10 +1,16 @@
 import { computed, reactive, ref } from 'vue';
 import { defineStore } from 'pinia';
-import type { PageStore, PageType } from '@/types/Page';
+import type { PageStore } from '@/types/Page';
+import type { Element } from '@/types/Element';
 
 const defaultPage = 'abc-11';
 
 export const usePageStore = defineStore('pageStore', () => {
+
+/* ================================================================================================================================================================================================
+Page  
+================================================================================================================================================================================================ */
+  
   const pageStore = reactive<PageStore>({
     'abc-11': {
       id: 'abc-11',
@@ -31,6 +37,7 @@ export const usePageStore = defineStore('pageStore', () => {
           backgroundColor: '#ccc'
         }
       ],
+      selectedElements: []
     },
     'test1': {
       id: 'test1',
@@ -48,14 +55,14 @@ export const usePageStore = defineStore('pageStore', () => {
           backgroundColor: '#ccc'
         }
       ],
+      selectedElements: []
     }
   });
   
-  // const currentPage = reactive<PageType>(pageStore[defaultPage]);
   const currentPageId = ref(defaultPage);
   const currentPage = computed(() => pageStore[currentPageId.value]);
 
-  function setPageRef(id: string, ref: HTMLDivElement) {
+  function bindPageRef(id: string, ref: HTMLDivElement) {
     pageStore[id].ref = ref;
   }
 
@@ -63,5 +70,35 @@ export const usePageStore = defineStore('pageStore', () => {
     currentPageId.value = id;
   }
 
-  return { pageStore, currentPageId, currentPage, setPageRef, setCurrentPageId };
+/* ================================================================================================================================================================================================
+Elements  
+================================================================================================================================================================================================ */
+
+  const elements = computed(() => currentPage.value.elements); 
+  const selectedElements = computed(() => currentPage.value.selectedElements);
+
+  function addElement(element: Element) {
+    pageStore[currentPageId.value].elements.push(element);
+  }
+
+  function findElement(range: Element[], id: string) {
+    return range.find(element => element.id === id);
+  }
+
+  function setSelectedElements(element: Element[]) {
+    pageStore[currentPageId.value].selectedElements = element;
+  }
+
+  function addSelectedElement(element: Element) {
+    pageStore[currentPageId.value].selectedElements.push(element);
+  }
+
+  function removeSelectedElement(element: Element) {
+    pageStore[currentPageId.value].selectedElements = pageStore[currentPageId.value].selectedElements.filter(el => el.id !== element.id);
+  }
+
+  return { 
+    pageStore, currentPageId, currentPage, bindPageRef, setCurrentPageId, 
+    elements, selectedElements, addElement, findElement, setSelectedElements, addSelectedElement, removeSelectedElement 
+  };
 });
