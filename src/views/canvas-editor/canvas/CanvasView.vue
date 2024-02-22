@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, provide, ref } from 'vue';
-import { useElementStore } from '../stores/elements';
 import { usePageStore } from '../stores/pages';
 import PageView from './PageView.vue';
 import DragBox from './components/DragBox.vue';
@@ -21,7 +20,7 @@ const ZOOM_FACTOR = 0.05;
 const scale = ref<number>(1); // 줌 배율
 
 // page
-const { currentPage: page } = usePageStore();
+const { currentPage: page, elements, setSelectedElements } = usePageStore();
 const panX = ref<number>(0);
 const panY = ref<number>(0);
 const pageW = ref<number>(800);
@@ -34,10 +33,8 @@ const dragboxY = ref<number>(0);
 const dragboxWidth = ref<number>(0);
 const dragboxHeight = ref<number>(0);
 
-const { state, setSelectedElement } = useElementStore();
-
 function handleMouseDown(e: MouseEvent) {
-  setSelectedElement([]);
+  setSelectedElements([]);
   startDragX.value = e.clientX;
   startDragY.value = e.clientY;
 
@@ -95,8 +92,7 @@ function handleMouseMove(e: MouseEvent) {
     const t1 = dragboxY.value;
     const r1 = l1 + dragboxWidth.value;
     const b1 = t1 + dragboxHeight.value;
-
-    const selected = state.elements.filter(e => {
+    const selected = elements.filter(e => {
       const l2 = e.x * scale.value + panX.value;
       const t2 = e.y * scale.value + panY.value;
       const r2 = l2 + e.width * scale.value;
@@ -105,7 +101,7 @@ function handleMouseMove(e: MouseEvent) {
       else return false;  
     });
 
-    setSelectedElement(selected);
+    setSelectedElements(selected);
   }
 }
 

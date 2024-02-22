@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject, onBeforeUnmount, ref } from 'vue';
-import { useElementStore } from '../..//stores/elements';
+import { usePageStore } from '../../stores/pages';
 import type { Element } from '@/types/Element';
 import type { MouseActionType } from '@/types/Canvas';
 
@@ -10,7 +10,7 @@ const props = defineProps({
 
 const setCurrentAction = inject<(action: MouseActionType) => void>('setCurrentAction');
 
-const { state } = useElementStore();
+const { selectedElements } = usePageStore();
 
 const isResizing = ref(false);
 const resizeDirection = ref<'lt' | 'rt' | 'lb' | 'rb' | null>(null);
@@ -25,19 +25,19 @@ function handleMouseDown(e: MouseEvent, direction: 'lt' | 'rt' | 'lb' | 'rb') {
   
   startX.value = e.clientX;
   startY.value = e.clientY;
-  elementSnapshot = JSON.parse(JSON.stringify(state.selectedElement));
+  elementSnapshot = JSON.parse(JSON.stringify(selectedElements));
   window.addEventListener('mousemove', handleMouseMove);
   window.addEventListener('mouseup', handleMouseUp);
 };
 
 function handleMouseMove(e: MouseEvent) {
-  if (!state.selectedElement) return;
+  if (!selectedElements.length) return;
   if (setCurrentAction) setCurrentAction('resize-element');
 
   const dx = (e.clientX - startX.value) * (1 / props.zoomLevel);
   const dy = (e.clientY - startY.value) * (1 / props.zoomLevel);
 
-  state.selectedElement.forEach((element, i) => {
+  selectedElements.forEach((element, i) => {
     let l = elementSnapshot[i].x;
     let t = elementSnapshot[i].y;
     let r = l + elementSnapshot[i].width;
