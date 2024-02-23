@@ -5,6 +5,7 @@ import BoundingBox from './BoundingBox.vue';
 import type { PropType, Ref } from 'vue';
 import type { Element } from '@/types/Element';
 import type { MouseActionType } from '@/types/Canvas'; 
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
   element: { type: Object as PropType<Element>, required: true },
@@ -14,7 +15,8 @@ const props = defineProps({
 const currentAction = inject<Ref<MouseActionType>>('currentAction');
 const setCurrentAction = inject<(action: MouseActionType) => void>('setCurrentAction');
 
-const { currentPage: page, setSelectedElements, findElement } = usePageStore();
+const store = usePageStore();
+const { selectedElements } = storeToRefs(store);
 
 const isMouseOver = ref(false);
 const startX = ref(0);
@@ -24,20 +26,20 @@ let elementSnapshot:Element[];
 function handleMouseDown(e: MouseEvent, element: Element) {
   isMouseOver.value = false; 
 
-  setSelectedElements([element]); // 추후 실행 취소 기능 개발 시 lastAction이 selectArea인 경우 제외하고 실행
+  store.setSelectedElements([element]); // 추후 실행 취소 기능 개발 시 lastAction이 selectArea인 경우 제외하고 실행
 
   startX.value = e.clientX;
   startY.value = e.clientY;
-  elementSnapshot = JSON.parse(JSON.stringify(page.selectedElements));
+  elementSnapshot = JSON.parse(JSON.stringify(selectedElements.value));
   window.addEventListener('mousemove', handleMouseMove);
   window.addEventListener('mouseup', handleMouseUp);
 };
 
 function handleMouseMove(e: MouseEvent) {
-  if (!page.selectedElements.length) return;
+  if (!selectedElements.value.length) return;
   if (setCurrentAction) setCurrentAction('move-element');
 
-  page.selectedElements.forEach((element, i) => {
+  selectedElements.value.forEach((element, i) => {
     const dx = (e.clientX - startX.value) * (1 / props.scale);
     const dy = (e.clientY - startY.value) * (1 / props.scale);
     element.x = elementSnapshot[i].x + dx;
@@ -58,7 +60,7 @@ onBeforeUnmount(() => {
 });
 
 function handleMouseOver(element: Element) {
-  const isCurrentElementSelected = !!findElement(page.selectedElements, element.id);
+  const isCurrentElementSelected = !!store.findElement(selectedElements.value, element.id);
   if (!isCurrentElementSelected && !currentAction?.value) {
     isMouseOver.value = true;
   }
@@ -86,7 +88,7 @@ function handleMouseLeave() {
     @mouseleave.stop="handleMouseLeave"
   >
   <div v-if="isMouseOver" class="border-box"></div>
-    <template v-if="!!findElement(page.selectedElements, element.id)">
+    <template v-if="!!store.findElement(selectedElements, element.id)">
       <div class="size-box">{{ element.width }} x {{ element.height }}</div>
       <BoundingBox :zoom-level="scale"/>
     </template>

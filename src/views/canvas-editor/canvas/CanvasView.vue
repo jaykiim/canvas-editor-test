@@ -4,6 +4,7 @@ import { usePageStore } from '../stores/pages';
 import PageView from './PageView.vue';
 import DragBox from './components/DragBox.vue';
 import type { MouseActionType } from '@/types/Canvas'; 
+import { storeToRefs } from 'pinia';
 
 const canvas = ref<HTMLDivElement>();
 const currentAction = ref<MouseActionType>('');
@@ -20,7 +21,8 @@ const ZOOM_FACTOR = 0.05;
 const scale = ref<number>(1); // 줌 배율
 
 // page
-const { currentPage: page, elements, setSelectedElements } = usePageStore();
+const store = usePageStore();
+const { currentPage: page, elements } = storeToRefs(store);
 const panX = ref<number>(0);
 const panY = ref<number>(0);
 const pageW = ref<number>(800);
@@ -34,7 +36,7 @@ const dragboxWidth = ref<number>(0);
 const dragboxHeight = ref<number>(0);
 
 function handleMouseDown(e: MouseEvent) {
-  setSelectedElements([]);
+  store.setSelectedElements([]);
   startDragX.value = e.clientX;
   startDragY.value = e.clientY;
 
@@ -92,7 +94,7 @@ function handleMouseMove(e: MouseEvent) {
     const t1 = dragboxY.value;
     const r1 = l1 + dragboxWidth.value;
     const b1 = t1 + dragboxHeight.value;
-    const selected = elements.filter(e => {
+    const selected = elements.value.filter(e => {
       const l2 = e.x * scale.value + panX.value;
       const t2 = e.y * scale.value + panY.value;
       const r2 = l2 + e.width * scale.value;
@@ -101,7 +103,7 @@ function handleMouseMove(e: MouseEvent) {
       else return false;  
     });
 
-    setSelectedElements(selected);
+    store.setSelectedElements(selected);
   }
 }
 
@@ -119,7 +121,7 @@ function handleWheel(e: WheelEvent) {
   // lb: rt로 이동
   // --> x, y 모두 반대방향으로 이동한다
   // 얼만큼? x,y 각각 lt 지점과 마우스 포인터와의 거리만큼
-  if (!page.ref) return;
+  if (!page.value.ref) return;
 
   // 확대 배율 조정
   const prevScale = scale.value;
@@ -128,10 +130,10 @@ function handleWheel(e: WheelEvent) {
   else zoomIn();
 
   // .element-page ~ 마우스 포인터까지 거리
-  const pagePos = page.ref.getBoundingClientRect();
+  const pagePos = page.value.ref.getBoundingClientRect();
   const x = (e.clientX - pagePos.x) / scale.value; 
   const y = (e.clientY - pagePos.y) / scale.value;
-
+  
   const px = x / pageW.value;
   const py = y / pageH.value;
   const ds = scale.value - prevScale;

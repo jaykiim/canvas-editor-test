@@ -58,9 +58,9 @@ Page
       selectedElements: []
     }
   });
-  
+
   const currentPageId = ref(defaultPage);
-  const currentPage = computed(() => pageStore[currentPageId.value]);
+  const currentPage = computed(() => pageStore[currentPageId.value]);  
 
   function bindPageRef(id: string, ref: HTMLDivElement) {
     pageStore[id].ref = ref;
@@ -98,7 +98,7 @@ Elements
   }
 
   return { 
-    pageStore, currentPageId, currentPage, bindPageRef, setCurrentPageId, 
+    pageStore, currentPage, bindPageRef, setCurrentPageId, 
     elements, selectedElements, addElement, findElement, setSelectedElements, addSelectedElement, removeSelectedElement 
   };
 });
