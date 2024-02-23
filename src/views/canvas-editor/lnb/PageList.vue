@@ -1,13 +1,12 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { usePageStore } from '../stores/pages';
 
-const { pageStore, currentPage, setCurrentPageId } = usePageStore();
+const store = usePageStore();
+const { pageStore, currentPage } = storeToRefs(store);
 
 function onClickPage(id: string) {
-  // console.log('currentPage', currentPage, pageStore[id]);
-  // Object.assign(pageStore[id], currentPage);
-  setCurrentPageId(id);
-  console.log('current page id ', currentPage.id);
+  store.setCurrentPageId(id);
 }
 </script>
 

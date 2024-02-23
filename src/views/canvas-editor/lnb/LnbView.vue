@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import PagesView from './PagesView.vue';
+import PageList from './PageList.vue';
 
 const TABS = ['Pages', 'Layers', 'Assets'];
 
@@ -28,7 +28,7 @@ function onClickTab(tab: typeof TABS[number]) {
     </div>
 
     <div class="contents-container">
-      <PagesView v-if="selectedTab === 'Pages'"/>
+      <PageList v-if="selectedTab === 'Pages'"/>
     </div>
   </div>
 </template>
